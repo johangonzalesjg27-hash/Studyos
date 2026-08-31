@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f0f13">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="StudyOS">
+<meta name="mobile-web-app-capable" content="yes">
+<title>StudyOS — Javier</title>
+<link rel="manifest" id="pwa-manifest">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230f0f13'/><text y='.9em' font-size='70' x='12'>📚</text></svg>">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+:root {
+  --bg:#0f0f13; --surface:#16161c; --surface2:#1e1e27; --surface3:#252532;
+  --border:rgba(255,255,255,0.07); --border-strong:rgba(255,255,255,0.12);
+  --text-primary:#f0f0f5; --text-secondary:#9090a8; --text-muted:#5a5a72;
+  --accent:#7c6fff; --accent-bg:rgba(124,111,255,0.12); --accent-border:rgba(124,111,255,0.3);
+  --danger:#ff5f5f; --danger-bg:rgba(255,95,95,0.1);
+  --success:#4ecb8d; --success-bg:rgba(78,203,141,0.1);
+  --warning:#f5a623; --warning-bg:rgba(245,166,35,0.1);
+  --iglesia:#a78bfa; --iglesia-bg:rgba(167,139,250,0.12);
+  --circ:#60a5fa; --math:#f472b6; --señales:#34d399; --contab:#fb923c;
+  --radius:10px; --radius-sm:6px;
+  --nav-h:64px; --top-h:56px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text-primary);}
+
+/* ── LAYOUT ── */
+.app{display:flex;height:100vh;height:100dvh}
+
+/* DESKTOP sidebar */
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:1.25rem 0;flex-shrink:0}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.content-area{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+
+/* ── TOPBAR ── */
+.topbar{padding:.85rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface);flex-shrink:0;min-height:var(--top-h)}
+.topbar h2{font-size:15px;font-weight:600}
+.topbar-right{display:flex;gap:8px;align-items:center}
+
+/* ── SIDEBAR NAV ── */
+.logo{padding:0 1.25rem 1.25rem;border-bottom:1px solid var(--border);margin-bottom:.75rem}
+.logo h1{font-size:15px;font-weight:600;letter-spacing:-.3px}
+.logo span{font-size:11px;color:var(--text-muted)}
+.nav-item{display:flex;align-items:center;gap:10px;padding:8px 1.25rem;cursor:pointer;font-size:13px;color:var(--text-secondary);transition:all .15s}
+.nav-item:hover{color:var(--text-primary);background:rgba(255,255,255,.04)}
+.nav-item.active{color:var(--accent);background:var(--accent-bg)}
+.nav-item.iglesia-nav.active{color:var(--iglesia);background:var(--iglesia-bg)}
+.nav-item i{font-size:16px}
+.nav-section{padding:1rem 1.25rem .4rem;font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted)}
+.sidebar-bottom{margin-top:auto;padding:.75rem 1.25rem;border-top:1px solid var(--border)}
+
+/* ── MOBILE BOTTOM NAV ── */
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);z-index:100;padding-bottom:var(--safe-bottom)}
+.mobile-nav-inner{display:flex;height:var(--nav-h)}
+.mob-nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--text-muted);transition:all .15s;padding:8px 2px;border:none;background:none;font-family:inherit}
+.mob-nav-item i{font-size:22px;line-height:1}
+.mob-nav-item span{font-size:9px;font-weight:500;letter-spacing:.2px}
+.mob-nav-item.active{color:var(--accent)}
+.mob-nav-item.iglesia-mob.active{color:var(--iglesia)}
+.mob-nav-more{position:relative}
+.more-menu{display:none;position:absolute;bottom:calc(100% + 8px);right:4px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:6px;min-width:160px;z-index:200;box-shadow:0 -8px 24px rgba(0,0,0,.4)}
+.more-menu.open{display:block}
+.more-menu-item{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;font-size:13px;color:var(--text-secondary);border-radius:var(--radius-sm);transition:all .15s}
+.more-menu-item:hover,.more-menu-item.active{color:var(--text-primary);background:rgba(255,255,255,.06)}
+.more-menu-item i{font-size:16px}
+
+/* ── PAGES ── */
+.page{display:none;padding:1.25rem;animation:fadeIn .15s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:.6;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* CHAT page special */
+.chat-page{display:none;flex-direction:column;height:100%}
+.chat-page.active{display:flex}
+
+/* ── GRIDS ── */
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:.875rem}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.875rem 1rem}
+.card-title{font-size:11px;font-weight:500;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.card-value{font-size:24px;font-weight:600;line-height:1}
+.card-sub{font-size:11px;color:var(--text-muted);margin-top:3px}
+
+/* COUNTDOWN */
+.countdown-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.875rem 1rem;position:relative;overflow:hidden}
+.countdown-card.urgent{border-color:rgba(255,95,95,.3)}
+.countdown-card.soon{border-color:rgba(245,166,35,.3)}
+.countdown-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px}
+.countdown-card.urgent::before{background:var(--danger)}
+.countdown-card.soon::before{background:var(--warning)}
+.countdown-card.ok::before{background:var(--success)}
+.cd-subject{font-size:11px;font-weight:500;color:var(--text-secondary);margin-bottom:3px}
+.cd-days{font-size:26px;font-weight:700}
+.cd-days.urgent{color:var(--danger)}.cd-days.soon{color:var(--warning)}.cd-days.ok{color:var(--success)}
+.cd-label{font-size:10px;color:var(--text-muted)}
+.cd-date{font-size:10px;color:var(--text-muted);margin-top:2px}
+
+/* SCHEDULE */
+.schedule-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.schedule-grid{display:grid;grid-template-columns:58px repeat(5,1fr);gap:2px;font-size:11px;min-width:480px}
+.sch-header{background:var(--surface2);padding:5px 6px;border-radius:var(--radius-sm);text-align:center;font-weight:500;color:var(--text-secondary);font-size:10px}
+.sch-time{padding:4px 3px;color:var(--text-muted);font-size:9px;display:flex;align-items:center;justify-content:flex-end}
+.sch-cell{background:var(--surface2);border-radius:var(--radius-sm);padding:4px 5px;min-height:32px;display:flex;flex-direction:column;justify-content:center}
+.sch-cell.empty{background:transparent}
+.sch-class{font-weight:500;font-size:9px;line-height:1.3}
+.sch-aula{font-size:8px;color:var(--text-muted)}
+.c-circ{background:rgba(96,165,250,.15);border-left:2px solid var(--circ)}
+.c-math{background:rgba(244,114,182,.15);border-left:2px solid var(--math)}
+.c-señales{background:rgba(52,211,153,.15);border-left:2px solid var(--señales)}
+.c-contab{background:rgba(251,146,60,.15);border-left:2px solid var(--contab)}
+.c-lab{background:rgba(96,165,250,.08);border-left:2px dashed #93c5fd}
+
+/* MATERIAS */
+.materia-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.875rem 1rem;cursor:pointer;transition:all .15s;margin-bottom:.625rem}
+.materia-card:active{transform:scale(.98)}
+.materia-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.materia-name{font-size:13px;font-weight:500}
+.materia-meta{font-size:11px;color:var(--text-muted);margin-top:2px}
+.progress-bar{height:3px;background:var(--surface3);border-radius:2px;margin-top:8px;overflow:hidden}
+.progress-fill{height:100%;border-radius:2px}
+
+/* TASKS */
+.task-item{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid var(--border)}
+.task-item:last-child{border-bottom:none}
+.task-check{width:18px;height:18px;border:1.5px solid var(--border-strong);border-radius:5px;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
+.task-check.done{background:var(--accent);border-color:var(--accent)}
+.task-check.done::after{content:'✓';font-size:10px;color:white}
+.task-text{font-size:13px;flex:1;line-height:1.4}
+.task-text.done{text-decoration:line-through;color:var(--text-muted)}
+.task-due{font-size:10px;color:var(--text-muted);white-space:nowrap}
+.task-due.overdue{color:var(--danger)}
+.task-tag{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:500;white-space:nowrap}
+.tag-circ{background:rgba(96,165,250,.15);color:var(--circ)}
+.tag-math{background:rgba(244,114,182,.15);color:var(--math)}
+.tag-señales{background:rgba(52,211,153,.15);color:var(--señales)}
+.tag-contab{background:rgba(251,146,60,.15);color:var(--contab)}
+.tag-iglesia{background:var(--iglesia-bg);color:var(--iglesia)}
+.tag-empanadas{background:rgba(251,146,60,.1);color:var(--warning)}
+
+/* FILTER PILLS */
+.filter-pills{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.filter-pills::-webkit-scrollbar{display:none}
+.pill{padding:6px 12px;border-radius:20px;font-size:12px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;color:var(--text-secondary);white-space:nowrap;transition:all .15s;font-family:inherit}
+.pill.active{background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border)}
+.pill-iglesia.active{background:var(--iglesia-bg);color:var(--iglesia);border-color:rgba(167,139,250,.3)}
+
+/* IGLESIA */
+.iglesia-hero{background:linear-gradient(135deg,rgba(167,139,250,.15) 0%,rgba(124,111,255,.08) 100%);border:1px solid rgba(167,139,250,.2);border-radius:var(--radius);padding:1rem;margin-bottom:1rem;display:flex;align-items:center;gap:.875rem}
+.iglesia-icon{width:44px;height:44px;border-radius:11px;background:var(--iglesia-bg);border:1px solid rgba(167,139,250,.3);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.iglesia-info h3{font-size:15px;font-weight:600;color:var(--iglesia)}
+.iglesia-info p{font-size:11px;color:var(--text-muted);margin-top:2px}
+.actividad-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.875rem 1rem;margin-bottom:6px;display:flex;align-items:center;gap:10px}
+.actividad-dot{width:7px;height:7px;border-radius:50%;background:var(--iglesia);flex-shrink:0}
+.actividad-name{font-size:13px;flex:1}
+.actividad-day{font-size:10px;color:var(--text-muted)}
+.actividad-badge{font-size:10px;padding:2px 7px;border-radius:10px;background:var(--iglesia-bg);color:var(--iglesia);font-weight:500}
+
+/* WEEK PLAN */
+.week-plan{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.day-col{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:8px 6px;min-height:120px}
+.day-col.today{border-color:var(--accent-border)}
+.day-name{font-size:10px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px}
+.day-col.today .day-name{color:var(--accent)}
+.day-event{font-size:9px;padding:3px 5px;border-radius:3px;margin-bottom:3px;line-height:1.3}
+.day-event.class{background:var(--surface3);color:var(--text-secondary)}
+.day-event.exam{background:rgba(255,95,95,.15);color:var(--danger);font-weight:500}
+.day-event.task{background:var(--accent-bg);color:var(--accent)}
+.day-event.iglesia{background:var(--iglesia-bg);color:var(--iglesia)}
+
+/* CHAT */
+.chat-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.875rem;-webkit-overflow-scrolling:touch}
+.msg{display:flex;gap:8px;max-width:82%}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.msg-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0}
+.msg-avatar.ai{background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border)}
+.msg-avatar.user{background:var(--surface3);color:var(--text-secondary)}
+.msg-bubble{padding:9px 13px;border-radius:14px;font-size:13px;line-height:1.55}
+.msg.ai .msg-bubble{background:var(--surface2);border:1px solid var(--border);border-radius:4px 14px 14px 14px}
+.msg.user .msg-bubble{background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:14px 4px 14px 14px}
+.chat-input-area{padding:.75rem 1rem;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.chat-chips{display:flex;gap:6px;margin-bottom:8px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding-bottom:2px}
+.chat-chips::-webkit-scrollbar{display:none}
+.chip{padding:5px 11px;border-radius:20px;font-size:11px;background:var(--surface2);border:1px solid var(--border);cursor:pointer;color:var(--text-secondary);transition:all .15s;white-space:nowrap;font-family:inherit}
+.chat-input-wrap{display:flex;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:7px 9px;align-items:flex-end}
+.chat-input-wrap textarea{flex:1;background:transparent;border:none;outline:none;color:var(--text-primary);font-size:14px;resize:none;min-height:20px;max-height:100px;line-height:1.5;font-family:inherit}
+.chat-input-wrap textarea::placeholder{color:var(--text-muted)}
+.send-btn{width:34px;height:34px;border-radius:9px;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;color:white;font-size:16px;transition:all .15s;flex-shrink:0}
+.send-btn:disabled{opacity:.4}
+.typing-indicator{display:flex;gap:4px;align-items:center;padding:4px 0}
+.typing-dot{width:6px;height:6px;border-radius:50%;background:var(--text-muted);animation:typing 1.2s infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}.typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes typing{0%,80%,100%{transform:scale(.7);opacity:.4}40%{transform:scale(1);opacity:1}}
+
+/* FORMS */
+.add-form{display:none;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:.875rem;margin-bottom:.875rem;gap:8px;flex-direction:column}
+.add-form.open{display:flex}
+.form-row{display:flex;gap:6px;flex-wrap:wrap}
+input[type=text],input[type=date],select,textarea{background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-primary);padding:9px 10px;font-size:14px;outline:none;font-family:inherit;transition:border-color .15s;width:100%}
+input[type=text]:focus,input[type=date]:focus,select:focus{border-color:var(--accent-border)}
+input[type=date]{color-scheme:dark}
+select{color:var(--text-secondary)}
+.form-row input,.form-row select{width:auto;flex:1;min-width:100px}
+.btn{padding:9px 14px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all .15s;font-family:inherit}
+.btn-primary{background:var(--accent);color:white}
+.btn-secondary{background:var(--surface3);color:var(--text-secondary);border:1px solid var(--border)}
+.btn-iglesia{background:var(--iglesia-bg);color:var(--iglesia);border:1px solid rgba(167,139,250,.3)}
+.btn-sm{padding:7px 12px;font-size:12px}
+.btn-fab{position:fixed;bottom:calc(var(--nav-h) + var(--safe-bottom) + 16px);right:16px;width:52px;height:52px;border-radius:50%;background:var(--accent);border:none;color:white;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(124,111,255,.4);z-index:90;transition:all .15s}
+.btn-fab:active{transform:scale(.94)}
+
+/* UTILS */
+.section-title{font-size:13px;font-weight:600;margin-bottom:.75rem}
+.mb1{margin-bottom:.625rem}.mb2{margin-bottom:1rem}.mt1{margin-top:.625rem}
+.badge{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500}
+.badge-danger{background:var(--danger-bg);color:var(--danger);border:1px solid rgba(255,95,95,.2)}
+.badge-warning{background:var(--warning-bg);color:var(--warning);border:1px solid rgba(245,166,35,.2)}
+.badge-success{background:var(--success-bg);color:var(--success);border:1px solid rgba(78,203,141,.2)}
+.sync-badge{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--success)}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--success);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:2px}
+
+/* ── MOBILE RESPONSIVE ── */
+@media(max-width:768px){
+  .sidebar{display:none}
+  .mobile-nav{display:block}
+  .content-area{padding-bottom:calc(var(--nav-h) + var(--safe-bottom))}
+  .page{padding:1rem}
+  .grid-4{grid-template-columns:repeat(2,1fr);gap:.625rem}
+  .grid-2{gap:.625rem}
+  .week-plan{grid-template-columns:repeat(4,1fr)}
+  .topbar{padding:.75rem 1rem}
+  .topbar-right .badge{display:none}
+  #today-date{display:none}
+}
+@media(max-width:480px){
+  .week-plan{grid-template-columns:repeat(3,1fr)}
+  .grid-2{grid-template-columns:1fr}
+}
+
+/* DESKTOP hide mobile stuff */
+@media(min-width:769px){
+  .btn-fab{display:none}
+  .chat-page{height:calc(100vh - var(--top-h))}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ── DESKTOP SIDEBAR ── -->
+<aside class="sidebar">
+  <div class="logo"><h1>StudyOS</h1><span>II Semestre · 2026</span></div>
+  <nav>
+    <div class="nav-item active" onclick="navigate('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
+    <div class="nav-item" onclick="navigate('horario',this)"><i class="ti ti-calendar-week"></i> Horario</div>
+    <div class="nav-item" onclick="navigate('plan',this)"><i class="ti ti-calendar"></i> Plan semanal</div>
+    <div class="nav-item" onclick="navigate('materias',this)"><i class="ti ti-book"></i> Materias</div>
+    <div class="nav-item" onclick="navigate('tareas',this)"><i class="ti ti-checkbox"></i> Tareas</div>
+    <div class="nav-section">Vida</div>
+    <div class="nav-item iglesia-nav" onclick="navigate('iglesia',this)"><i class="ti ti-building-church"></i> Iglesia</div>
+    <div class="nav-section">IA</div>
+    <div class="nav-item" onclick="navigate('chat',this)"><i class="ti ti-robot"></i> Tutor IA</div>
+  </nav>
+  <div class="sidebar-bottom">
+    <div class="sync-badge"><div class="sync-dot"></div> Sincronizado</div>
+    <div style="font-size:10px;color:var(--text-muted);margin-top:3px">Google Cal · TickTick · IA</div>
+  </div>
+</aside>
+
+<!-- ── MAIN ── -->
+<main class="main">
+  <div class="topbar">
+    <h2 id="page-title">Dashboard</h2>
+    <div class="topbar-right">
+      <span class="badge badge-danger" id="urgency-badge">🚨 Circuitos — 6d</span>
+      <span style="font-size:12px;color:var(--text-muted)" id="today-date"></span>
+    </div>
+  </div>
+
+  <div class="content-area">
+
+    <!-- DASHBOARD -->
+    <div id="page-dashboard" class="page active">
+      <div class="grid-4 mb2">
+        <div class="card"><div class="card-title">Semana</div><div class="card-value">2</div><div class="card-sub">de ~16</div></div>
+        <div class="card"><div class="card-title">Próx. parcial</div><div class="card-value" id="next-days" style="color:var(--danger)">6</div><div class="card-sub">días — Circuitos</div></div>
+        <div class="card"><div class="card-title">Tareas</div><div class="card-value" id="tasks-count">0</div><div class="card-sub">pendientes</div></div>
+        <div class="card"><div class="card-title">Sábado</div><div class="card-value" style="font-size:16px;color:var(--iglesia)">Iglesia</div><div class="card-sub">día sagrado</div></div>
+      </div>
+      <div class="section-title mb1">Parciales</div>
+      <div class="grid-4 mb2" id="parciales-grid"></div>
+      <div class="grid-2">
+        <div>
+          <div class="section-title mb1">Hoy <span id="hoy-dia" style="color:var(--text-muted);font-size:11px;font-weight:400"></span></div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.875rem 1rem" id="hoy-content"></div>
+        </div>
+        <div>
+          <div class="section-title mb1">Urgentes</div>
+          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.875rem 1rem" id="urgent-tasks"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HORARIO -->
+    <div id="page-horario" class="page">
+      <div class="mb2" style="display:flex;gap:8px;flex-wrap:wrap">
+        <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-secondary)"><span style="width:9px;height:9px;border-radius:2px;background:rgba(96,165,250,.15);border-left:2px solid var(--circ);display:inline-block"></span>Circuitos I</span>
+        <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-secondary)"><span style="width:9px;height:9px;border-radius:2px;background:rgba(244,114,182,.15);border-left:2px solid var(--math);display:inline-block"></span>Mat. Sup.</span>
+        <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-secondary)"><span style="width:9px;height:9px;border-radius:2px;background:rgba(52,211,153,.15);border-left:2px solid var(--señales);display:inline-block"></span>Señales</span>
+        <span style="display:flex;align-items:center;gap:4px;font-size:11px;color:var(--text-secondary)"><span style="width:9px;height:9px;border-radius:2px;background:rgba(251,146,60,.15);border-left:2px solid var(--contab);display:inline-block"></span>Contables</span>
+      </div>
+      <div class="schedule-wrap">
+        <div class="schedule-grid">
+          <div class="sch-header" style="background:transparent"></div>
+          <div class="sch-header">Lun</div><div class="sch-header">Mar</div><div class="sch-header">Mié</div><div class="sch-header">Jue</div><div class="sch-header">Vie</div>
+          <div class="sch-time">8:40</div>
+          <div class="sch-cell c-contab"><span class="sch-class" style="color:var(--contab)">Contables</span><span class="sch-aula">2E-9</span></div>
+          <div class="sch-cell empty"></div><div class="sch-cell empty"></div><div class="sch-cell empty"></div><div class="sch-cell empty"></div>
+          <div class="sch-time">9:30</div>
+          <div class="sch-cell c-contab"><span class="sch-class" style="color:var(--contab)">Contables</span><span class="sch-aula">2E-9</span></div>
+          <div class="sch-cell c-lab"><span class="sch-class" style="color:var(--circ)">Lab Circ.</span><span class="sch-aula">2E-5</span></div>
+          <div class="sch-cell empty"></div><div class="sch-cell empty"></div><div class="sch-cell empty"></div>
+          <div class="sch-time">10:20</div>
+          <div class="sch-cell c-contab"><span class="sch-class" style="color:var(--contab)">Contables</span><span class="sch-aula">2E-9</span></div>
+          <div class="sch-cell c-lab"><span class="sch-class" style="color:var(--circ)">Lab Circ.</span><span class="sch-aula">2E-5</span></div>
+          <div class="sch-cell empty"></div><div class="sch-cell empty"></div><div class="sch-cell empty"></div>
+          <div class="sch-time">12:00</div>
+          <div class="sch-cell empty"></div>
+          <div class="sch-cell c-señales"><span class="sch-class" style="color:var(--señales)">Señales</span><span class="sch-aula">2E-6</span></div>
+          <div class="sch-cell empty"></div><div class="sch-cell empty"></div><div class="sch-cell empty"></div>
+          <div class="sch-time">12:50</div>
+          <div class="sch-cell empty"></div>
+          <div class="sch-cell c-señales"><span class="sch-class" style="color:var(--señales)">Señales</span><span class="sch-aula">2E-6</span></div>
+          <div class="sch-cell empty"></div><div class="sch-cell empty"></div><div class="sch-cell empty"></div>
+          <div class="sch-time">2:30</div>
+          <div class="sch-cell c-math"><span class="sch-class" style="color:var(--math)">Mat.Sup.</span><span class="sch-aula">2E-6</span></div>
+          <div class="sch-cell c-math"><span class="sch-class" style="color:var(--math)">Mat.Sup.</span><span class="sch-aula">2E-6</span></div>
+          <div class="sch-cell empty"></div><div class="sch-cell empty"></div><div class="sch-cell empty"></div>
+          <div class="sch-time">3:20</div>
+          <div class="sch-cell c-math"><span class="sch-class" style="color:var(--math)">Mat.Sup.</span><span class="sch-aula">2E-6</span></div>
+          <div class="sch-cell c-math"><span class="sch-class" style="color:var(--math)">Mat.Sup.</span><span class="sch-aula">2E-6</span></div>
+          <div class="sch-cell c-circ"><span class="sch-class" style="color:var(--circ)">Circuitos</span><span class="sch-aula">2E-5</span></div>
+          <div class="sch-cell c-circ"><span class="sch-class" style="color:var(--circ)">Circuitos</span><span class="sch-aula">2E-5</span></div>
+          <div class="sch-cell c-señales"><span class="sch-class" style="color:var(--señales)">Señales</span><span class="sch-aula">2E-6</span></div>
+          <div class="sch-time">4:10</div>
+          <div class="sch-cell c-math"><span class="sch-class" style="color:var(--math)">Mat.Sup.</span><span class="sch-aula">2E-6</span></div>
+          <div class="sch-cell c-circ"><span class="sch-class" style="color:var(--circ)">Circuitos</span><span class="sch-aula">2E-5</span></div>
+          <div class="sch-cell c-circ"><span class="sch-class" style="color:var(--circ)">Circuitos</span><span class="sch-aula">2E-5</span></div>
+          <div class="sch-cell c-circ"><span class="sch-class" style="color:var(--circ)">Circuitos</span><span class="sch-aula">2E-5</span></div>
+          <div class="sch-cell c-señales"><span class="sch-class" style="color:var(--señales)">Señales</span><span class="sch-aula">2E-6</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PLAN SEMANAL -->
+    <div id="page-plan" class="page">
+      <div class="week-plan mb2" id="week-plan-grid"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span style="font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:1px;background:var(--surface3);display:inline-block"></span>Clase</span>
+        <span style="font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:1px;background:rgba(255,95,95,.15);display:inline-block"></span>Parcial</span>
+        <span style="font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:1px;background:var(--accent-bg);display:inline-block"></span>Estudio</span>
+        <span style="font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;border-radius:1px;background:var(--iglesia-bg);display:inline-block"></span>Iglesia</span>
+      </div>
+    </div>
+
+    <!-- MATERIAS -->
+    <div id="page-materias" class="page">
+      <div id="materias-list"></div>
+    </div>
+
+    <!-- TAREAS -->
+    <div id="page-tareas" class="page">
+      <div class="filter-pills mb2" id="task-filters">
+        <button class="pill active" onclick="filterTasks('all',this)">Todas</button>
+        <button class="pill" onclick="filterTasks('circ',this)">Circuitos</button>
+        <button class="pill" onclick="filterTasks('math',this)">Matemáticas</button>
+        <button class="pill" onclick="filterTasks('señales',this)">Señales</button>
+        <button class="pill" onclick="filterTasks('contab',this)">Contables</button>
+        <button class="pill pill-iglesia" onclick="filterTasks('iglesia',this)">⛪ Iglesia</button>
+      </div>
+      <div class="add-form" id="add-task-form">
+        <input type="text" id="new-task-text" placeholder="Descripción de la tarea...">
+        <div class="form-row">
+          <select id="new-task-cat">
+            <option value="circ">Circuitos I</option>
+            <option value="math">Mat. Superiores</option>
+            <option value="señales">Señales y Sist.</option>
+            <option value="contab">Sist. Contables</option>
+            <option value="iglesia">Iglesia</option>
+            <option value="empanadas">Empanadas</option>
+          </select>
+          <select id="new-task-priority">
+            <option value="alta">Alta</option>
+            <option value="media">Media</option>
+            <option value="baja">Baja</option>
+          </select>
+          <input type="date" id="new-task-due" style="width:auto">
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-primary btn-sm" onclick="addTask()">Agregar</button>
+          <button class="btn btn-secondary btn-sm" onclick="toggleAddTask()">Cancelar</button>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted)">📲 Las tareas con fecha van a TickTick</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:0 1rem" id="task-list"></div>
+      <!-- Desktop add button -->
+      <button class="btn btn-primary btn-sm mt1" onclick="toggleAddTask()" style="display:none" id="desk-add-btn"><i class="ti ti-plus"></i> Agregar tarea</button>
+    </div>
+
+    <!-- IGLESIA -->
+    <div id="page-iglesia" class="page">
+      <div class="iglesia-hero">
+        <div class="iglesia-icon">⛪</div>
+        <div class="iglesia-info"><h3>Iglesia Adventista</h3><p>Sábado — día sagrado · Tus compromisos y actividades</p></div>
+      </div>
+      <div class="section-title mb1" style="color:var(--iglesia)">Actividades regulares</div>
+      <div id="actividades-iglesia" class="mb2"></div>
+      <button class="btn btn-iglesia btn-sm mb2" onclick="toggleAddActividad()"><i class="ti ti-plus"></i> Agregar actividad</button>
+      <div class="add-form" id="add-actividad-form">
+        <input type="text" id="new-actividad-text" placeholder="Nombre de la actividad...">
+        <div class="form-row">
+          <select id="new-actividad-dia">
+            <option value="Sábado">Sábado</option><option value="Domingo">Domingo</option>
+            <option value="Miércoles">Miércoles</option><option value="Viernes">Viernes</option><option value="Semanal">Semanal</option>
+          </select>
+          <input type="text" id="new-actividad-hora" placeholder="Hora (9:00 AM)" style="width:auto;flex:1">
+        </div>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-iglesia btn-sm" onclick="addActividad()">Agregar</button>
+          <button class="btn btn-secondary btn-sm" onclick="toggleAddActividad()">Cancelar</button>
+        </div>
+      </div>
+      <div class="section-title mb1" style="color:var(--iglesia)">Tareas de iglesia</div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:0 1rem;margin-bottom:1rem" id="iglesia-tasks-list"></div>
+      <div class="section-title mb1" style="color:var(--iglesia)">Notas</div>
+      <textarea id="iglesia-notes" placeholder="Versículos, sermones, compromisos..." style="width:100%;min-height:100px;border-radius:var(--radius);padding:12px;resize:vertical;line-height:1.6"></textarea>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+        <button class="btn btn-iglesia btn-sm" onclick="saveNotes()"><i class="ti ti-device-floppy"></i> Guardar</button>
+        <span id="notes-saved" style="font-size:11px;color:var(--success);display:none">✓ Guardado</span>
+      </div>
+    </div>
+
+    <!-- TUTOR IA -->
+    <div id="page-chat" class="page">
+      <div style="background:linear-gradient(135deg,rgba(124,111,255,0.15) 0%,rgba(124,111,255,0.05) 100%);border:1px solid var(--accent-border);border-radius:var(--radius);padding:1.25rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:1rem;">
+        <div style="width:48px;height:48px;border-radius:12px;background:var(--accent-bg);border:1px solid var(--accent-border);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🤖</div>
+        <div>
+          <div style="font-size:15px;font-weight:600;color:var(--accent)">Tutor IA — Claude</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px">Se abre en claude.ai con tu contexto completo</div>
+        </div>
+      </div>
+
+      <div class="section-title mb1">Accesos rápidos</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1.5rem;" id="quick-actions"></div>
+
+      <div class="section-title mb1">O escribe tu consulta</div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:.875rem;">
+        <textarea id="custom-prompt" placeholder="Ej: Explícame resistencia equivalente con un ejemplo práctico..." style="width:100%;min-height:80px;border:none;background:transparent;color:var(--text-primary);font-size:13px;resize:none;outline:none;font-family:inherit;line-height:1.6;"></textarea>
+        <div style="display:flex;justify-content:flex-end;margin-top:8px;">
+          <button class="btn btn-primary btn-sm" onclick="openCustomPrompt()">
+            <i class="ti ti-external-link" style="font-size:13px;margin-right:4px"></i>Abrir en Claude
+          </button>
+        </div>
+      </div>
+
+      <div style="margin-top:1.25rem;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:.875rem 1rem;">
+        <div style="font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:6px;">
+          <i class="ti ti-info-circle" style="font-size:13px;"></i>
+          Cada botón abre claude.ai con el mensaje ya escrito y tu contexto académico incluido. Solo presiona Enter.
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end content-area -->
+</main>
+</div><!-- end app -->
+
+<!-- ── MOBILE BOTTOM NAV ── -->
+<nav class="mobile-nav">
+  <div class="mobile-nav-inner">
+    <button class="mob-nav-item active" onclick="navigate('dashboard',this)" data-page="dashboard">
+      <i class="ti ti-layout-dashboard"></i><span>Inicio</span>
+    </button>
+    <button class="mob-nav-item" onclick="navigate('tareas',this)" data-page="tareas">
+      <i class="ti ti-checkbox"></i><span>Tareas</span>
+    </button>
+    <button class="mob-nav-item iglesia-mob" onclick="navigate('iglesia',this)" data-page="iglesia">
+      <i class="ti ti-building-church"></i><span>Iglesia</span>
+    </button>
+    <button class="mob-nav-item" onclick="navigate('chat',this)" data-page="chat">
+      <i class="ti ti-robot"></i><span>Tutor IA</span>
+    </button>
+    <button class="mob-nav-item mob-nav-more" onclick="toggleMoreMenu(event)">
+      <i class="ti ti-dots"></i><span>Más</span>
+      <div class="more-menu" id="more-menu">
+        <div class="more-menu-item" onclick="navigate('horario',null);closeMore()"><i class="ti ti-calendar-week"></i> Horario</div>
+        <div class="more-menu-item" onclick="navigate('plan',null);closeMore()"><i class="ti ti-calendar"></i> Plan semanal</div>
+        <div class="more-menu-item" onclick="navigate('materias',null);closeMore()"><i class="ti ti-book"></i> Materias</div>
+      </div>
+    </button>
+  </div>
+</nav>
+
+<!-- FAB para agregar tarea en móvil (solo en página tareas) -->
+<button class="btn-fab" id="fab-add" onclick="toggleAddTask()" style="display:none">
+  <i class="ti ti-plus"></i>
+</button>
+
+<script>
+// ── DATA ──
+const PARCIALES=[
+  {materia:'Circuitos I',fecha:new Date('2026-09-03'),cls:'urgent'},
+  {materia:'Señales y Sist.',fecha:new Date('2026-09-10'),cls:'soon',aprox:true},
+  {materia:'Sist. Contables',fecha:new Date('2026-09-10'),cls:'soon',aprox:true},
+  {materia:'Mat. Superiores',fecha:new Date('2026-09-14'),cls:'soon'},
+];
+const MATERIAS=[
+  {id:'circ',name:'Circuitos I',horas:'5h/sem + lab',nivel:'Media',color:'var(--circ)',nota:'🚨 Parcial en 6 días',progress:12},
+  {id:'math',name:'Matemáticas Superiores',horas:'5h/sem',nivel:'Difícil',color:'var(--math)',nota:'Primera vez · parcial 14 sep',progress:10},
+  {id:'señales',name:'Señales y Sistemas',horas:'4h/sem',nivel:'Difícil',color:'var(--señales)',nota:'Primera vez · muy conceptual',progress:10},
+  {id:'contab',name:'Sistemas Contables',horas:'3h/sem',nivel:'Media',color:'var(--contab)',nota:'Solo lunes',progress:10},
+];
+let tasks=[
+  {id:1,text:'Repasar leyes de Kirchhoff para el parcial',cat:'circ',priority:'alta',done:false,due:'2026-09-02'},
+  {id:2,text:'Resolver ejercicios de circuitos en serie y paralelo',cat:'circ',priority:'alta',done:false,due:'2026-09-01'},
+  {id:3,text:'Ver introducción a transformadas de señales',cat:'señales',priority:'media',done:false,due:''},
+  {id:4,text:'Ejercicios del libro Mat. Superiores cap. 1',cat:'math',priority:'media',done:false,due:''},
+  {id:5,text:'Revisar notas del laboratorio de circuitos',cat:'circ',priority:'alta',done:false,due:'2026-08-30'},
+];
+let actividades=[
+  {id:1,name:'Culto matutino / Escuela Sabática',dia:'Sábado',hora:'9:00 AM'},
+  {id:2,name:'Culto divino',dia:'Sábado',hora:'11:00 AM'},
+  {id:3,name:'Actividades de tarde',dia:'Sábado',hora:'Tarde'},
+];
+let taskFilter='all';
+let chatHistory=[];
+let currentPage='dashboard';
+
+const CONTEXTO=`[Contexto: Soy Javier, estudiante de Ingeniería Eléctrica en UTP David, Panamá. Materias: Circuitos I, Matemáticas Superiores para Ingenieros, Señales y Sistemas, Sistemas Contables. Parcial de Circuitos I el 3 sept, Matemáticas Superiores el 14 sept. Adventista del séptimo día. Estudia solo.]\n\n`;
+
+const QUICK_PROMPTS=[
+  {icon:'📅',label:'Plan de estudio de hoy',texto:'¿Qué debo estudiar hoy según mi horario y los parciales que se aproximan? Dame un plan concreto para el día.'},
+  {icon:'⚡',label:'Quiz de Circuitos I',texto:'Hazme un quiz de práctica de Circuitos I. Temas: resistencia equivalente por reducción, leyes de Kirchhoff (LVK y LCK), divisor de voltaje y corriente, transformación de fuente. El parcial es el miércoles 3 de septiembre.'},
+  {icon:'🔬',label:'Explicar Señales y Sistemas',texto:'Explícame un concepto fundamental de Señales y Sistemas desde cero, con un ejemplo práctico de ingeniería. Es la primera vez que veo esta materia.'},
+  {icon:'📐',label:'Ayuda con Matemáticas Superiores',texto:'Necesito ayuda con Matemáticas Superiores para Ingenieros. El primer parcial es el 14 de septiembre y es la primera vez que veo esta materia. ¿Por dónde empezamos?'},
+  {icon:'🔋',label:'Repasar Kirchhoff rápido',texto:'Explícame las leyes de Kirchhoff (LVK y LCK) de forma rápida y clara, con un ejemplo resuelto paso a paso. Tengo el parcial de Circuitos el miércoles.'},
+  {icon:'⛪',label:'Versículo motivador',texto:'Dame un versículo bíblico motivador para estudiar hoy y una reflexión corta. Soy adventista del séptimo día.'},
+];
+
+// ── INIT ──
+function init(){
+  const now=new Date();
+  document.getElementById('today-date').textContent=now.toLocaleDateString('es-PA',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('hoy-dia').textContent='— '+['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'][now.getDay()];
+  renderParciales(now);renderHoy(now);renderUrgentTasks();renderMaterias();renderTasks();renderWeekPlan(now);renderActividades();renderIglesiaTasks();loadNotes();
+  setupPWA();
+  // Desktop: show add btn
+  document.getElementById('desk-add-btn').style.display='inline-flex';
+}
+
+// ── PWA SETUP ──
+function setupPWA(){
+  const manifest={name:'StudyOS — Javier',short_name:'StudyOS',description:'Sistema de organización estudiantil',start_url:'.',display:'standalone',background_color:'#0f0f13',theme_color:'#0f0f13',orientation:'portrait',icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='115' fill='%230f0f13'/><text y='380' font-size='360' x='65'>📚</text></svg>",sizes:'512x512',type:'image/svg+xml'}]};
+  const blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
+  document.getElementById('pwa-manifest').href=URL.createObjectURL(blob);
+  if('serviceWorker' in navigator){
+    const sw=`self.addEventListener('fetch',e=>{e.respondWith(fetch(e.request).catch(()=>caches.match(e.request)));});`;
+    const swBlob=new Blob([sw],{type:'application/javascript'});
+    navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(()=>{});
+  }
+}
+
+// ── HELPERS ──
+function daysBetween(d1,d2){return Math.ceil((d2-d1)/(1000*60*60*24));}
+function catLabel(c){return{circ:'Circuitos',math:'Matemáticas',señales:'Señales',contab:'Contables',iglesia:'Iglesia',empanadas:'Empanadas'}[c]||c;}
+function isDue(due){if(!due)return false;const d=new Date(due);d.setHours(23,59,59);return d<new Date();}
+function fmtDate(due){if(!due)return'';return new Date(due+'T00:00:00').toLocaleDateString('es-PA',{day:'numeric',month:'short'});}
+
+// ── RENDER ──
+function renderParciales(now){
+  const n=now||new Date();n.setHours&&n.setHours(0,0,0,0);
+  document.getElementById('parciales-grid').innerHTML=PARCIALES.map(p=>{
+    const d=daysBetween(n,p.fecha);const cls=d<=5?'urgent':d<=12?'soon':'ok';
+    return`<div class="countdown-card ${cls}"><div class="cd-subject">${p.materia}${p.aprox?' ≈':''}</div><div class="cd-days ${cls}">${d}</div><div class="cd-label">días</div><div class="cd-date">${p.fecha.toLocaleDateString('es-PA',{day:'numeric',month:'short'})}</div></div>`;
+  }).join('');
+  const next=PARCIALES.reduce((a,b)=>daysBetween(n,a.fecha)<daysBetween(n,b.fecha)?a:b);
+  const nd=daysBetween(n,next.fecha);
+  document.getElementById('next-days').textContent=nd;
+  const ub=document.getElementById('urgency-badge');
+  ub.textContent=`🚨 Circuitos — ${nd}d`;
+  ub.className='badge '+(nd<=5?'badge-danger':nd<=12?'badge-warning':'badge-success');
+}
+
+function renderHoy(now){
+  const dia=now.getDay();
+  const sm={1:['Sist. Contables 8:40–11:05','Mat. Superiores 2:30–4:55'],2:['Lab Circuitos I 9:30–11:05','Señales y Sist. 12:00–1:35','Mat. Sup. 2:30–4:05','Circuitos I 4:10–4:55'],3:['Circuitos I 3:20–4:55'],4:['Circuitos I 3:20–4:55'],5:['Señales y Sist. 3:20–4:55'],6:['⛪ Iglesia Adventista — día sagrado'],0:['🌟 Día libre — planifica tu semana']};
+  const el=document.getElementById('hoy-content');
+  const clases=sm[dia]||[];
+  el.innerHTML=clases.length===0?'<p style="font-size:13px;color:var(--text-muted)">Sin clases hoy</p>':clases.map(c=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px"><i class="ti ti-clock" style="font-size:13px;color:var(--text-muted)"></i>${c}</div>`).join('');
+}
+
+function renderUrgentTasks(){
+  const u=tasks.filter(t=>!t.done&&t.priority==='alta').slice(0,4);
+  const el=document.getElementById('urgent-tasks');
+  el.innerHTML=u.length===0?'<p style="font-size:13px;color:var(--text-muted)">Sin urgentes 🎉</p>':u.map(t=>`<div style="display:flex;align-items:center;gap:7px;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px"><span class="task-tag tag-${t.cat}">${catLabel(t.cat)}</span><span style="flex:1">${t.text}</span>${t.due?`<span class="task-due ${isDue(t.due)?'overdue':''}">${fmtDate(t.due)}</span>`:''}</div>`).join('');
+  document.getElementById('tasks-count').textContent=tasks.filter(t=>!t.done).length;
+}
+
+function renderMaterias(){
+  document.getElementById('materias-list').innerHTML=MATERIAS.map(m=>`<div class="materia-card" onclick="navigate('chat',null)"><div style="display:flex;align-items:center;gap:9px;margin-bottom:5px"><div class="materia-dot" style="background:${m.color}"></div><div class="materia-name">${m.name}</div></div><div class="materia-meta">${m.horas} · Dificultad: ${m.nivel}</div><div class="materia-meta">${m.nota}</div><div class="progress-bar"><div class="progress-fill" style="width:${m.progress}%;background:${m.color}"></div></div></div>`).join('');
+}
+
+function renderTasks(){
+  const f=taskFilter==='all'?tasks:tasks.filter(t=>t.cat===taskFilter);
+  document.getElementById('task-list').innerHTML=f.length===0?'<p style="font-size:13px;color:var(--text-muted);padding:1rem 0">No hay tareas aquí</p>':f.map(t=>`<div class="task-item"><div class="task-check ${t.done?'done':''}" onclick="toggleTask(${t.id})"></div><div style="flex:1"><div class="task-text ${t.done?'done':''}">${t.text}</div><div style="display:flex;gap:5px;margin-top:3px;align-items:center"><span class="task-tag tag-${t.cat}">${catLabel(t.cat)}</span><span style="font-size:10px;color:${t.priority==='alta'?'var(--danger)':t.priority==='media'?'var(--warning)':'var(--text-muted)'}">${t.priority}</span>${t.due?`<span class="task-due ${isDue(t.due)?'overdue':''}">${fmtDate(t.due)}</span>`:''}</div></div></div>`).join('');
+}
+
+function renderActividades(){
+  document.getElementById('actividades-iglesia').innerHTML=actividades.map(a=>`<div class="actividad-card"><div class="actividad-dot"></div><div class="actividad-name">${a.name}</div><div class="actividad-day">${a.hora}</div><span class="actividad-badge">${a.dia}</span></div>`).join('');
+}
+
+function renderIglesiaTasks(){
+  const it=tasks.filter(t=>t.cat==='iglesia'&&!t.done);
+  document.getElementById('iglesia-tasks-list').innerHTML=it.length===0?'<p style="font-size:13px;color:var(--text-muted);padding:1rem 0">Sin tareas de iglesia</p>':it.map(t=>`<div class="task-item"><div class="task-check" onclick="toggleTask(${t.id});renderIglesiaTasks()"></div><div class="task-text">${t.text}</div>${t.due?`<span class="task-due">${fmtDate(t.due)}</span>`:''}</div>`).join('');
+}
+
+function renderWeekPlan(now){
+  const days=['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+  const today=now.getDay();
+  const plan={1:[{t:'class',l:'Contab 8:40'},{t:'class',l:'Mat.Sup 2:30'},{t:'task',l:'Estudiar Circ.'}],2:[{t:'class',l:'Lab Circ 9:30'},{t:'class',l:'Señales 12:00'},{t:'class',l:'Circuitos 4:10'}],3:[{t:'task',l:'Empanadas☕'},{t:'class',l:'Circ 3:20'},{t:'task',l:'Repasar'}],4:[{t:'class',l:'Circ 3:20'},{t:'task',l:'Repasar todo'}],5:[{t:'task',l:'Empanadas☕'},{t:'class',l:'Señales 3:20'}],6:[{t:'iglesia',l:'⛪ Iglesia'}],0:[{t:'task',l:'Planificar'}]};
+  document.getElementById('week-plan-grid').innerHTML=[0,1,2,3,4,5,6].map(i=>{
+    const ev=plan[i]||[];const isT=i===today;
+    return`<div class="day-col ${isT?'today':''}"><div class="day-name">${days[i]}</div>${ev.map(e=>`<div class="day-event ${e.t}">${e.l}</div>`).join('')}${i===3?'<div class="day-event exam">🚨 Parcial</div>':''}</div>`;
+  }).join('');
+}
+
+// ── INTERACTIONS ──
+function toggleTask(id){const t=tasks.find(t=>t.id===id);if(t){t.done=!t.done;renderTasks();renderUrgentTasks();renderIglesiaTasks();}}
+
+function filterTasks(f,btn){
+  taskFilter=f;
+  document.querySelectorAll('#task-filters .pill').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  renderTasks();
+}
+
+function toggleAddTask(){
+  const f=document.getElementById('add-task-form');
+  f.classList.toggle('open');
+  if(f.classList.contains('open'))document.getElementById('new-task-text').focus();
+}
+
+function toggleAddActividad(){document.getElementById('add-actividad-form').classList.toggle('open');}
+
+function addTask(){
+  const text=document.getElementById('new-task-text').value.trim();
+  if(!text)return;
+  tasks.unshift({id:Date.now(),text,cat:document.getElementById('new-task-cat').value,priority:document.getElementById('new-task-priority').value,done:false,due:document.getElementById('new-task-due').value});
+  document.getElementById('new-task-text').value='';document.getElementById('new-task-due').value='';
+  document.getElementById('add-task-form').classList.remove('open');
+  renderTasks();renderUrgentTasks();renderIglesiaTasks();
+}
+
+function addActividad(){
+  const text=document.getElementById('new-actividad-text').value.trim();if(!text)return;
+  actividades.push({id:Date.now(),name:text,dia:document.getElementById('new-actividad-dia').value,hora:document.getElementById('new-actividad-hora').value});
+  document.getElementById('new-actividad-text').value='';document.getElementById('new-actividad-hora').value='';
+  document.getElementById('add-actividad-form').classList.remove('open');renderActividades();
+}
+
+function saveNotes(){
+  localStorage.setItem('iglesia-notes',document.getElementById('iglesia-notes').value);
+  const s=document.getElementById('notes-saved');s.style.display='inline';setTimeout(()=>s.style.display='none',2000);
+}
+function loadNotes(){const n=localStorage.getItem('iglesia-notes');if(n)document.getElementById('iglesia-notes').value=n;}
+
+// ── MORE MENU ──
+function toggleMoreMenu(e){e.stopPropagation();document.getElementById('more-menu').classList.toggle('open');}
+function closeMore(){document.getElementById('more-menu').classList.remove('open');}
+document.addEventListener('click',()=>closeMore());
+
+// ── NAVIGATION ──
+function navigate(page,el){
+  currentPage=page;
+  // Desktop sidebar
+  document.querySelectorAll('.sidebar .nav-item').forEach(n=>n.classList.remove('active'));
+  // Mobile nav
+  document.querySelectorAll('.mob-nav-item').forEach(n=>n.classList.remove('active'));
+  // Pages
+  document.querySelectorAll('.page,.chat-page').forEach(p=>{p.classList.remove('active');});
+
+  // Activate nav item
+  if(el){
+    el.classList.add('active');
+    // If desktop nav item, also activate mobile counterpart
+    const mobItem=document.querySelector(`.mob-nav-item[data-page="${page}"]`);
+    if(mobItem)mobItem.classList.add('active');
+  } else {
+    const deskItem=document.querySelector(`.sidebar .nav-item[onclick*="${page}"]`);
+    if(deskItem)deskItem.classList.add('active');
+    const mobItem=document.querySelector(`.mob-nav-item[data-page="${page}"]`);
+    if(mobItem)mobItem.classList.add('active');
+  }
+
+  const titles={dashboard:'Dashboard',horario:'Horario',plan:'Plan semanal',materias:'Materias',tareas:'Tareas',iglesia:'Iglesia',chat:'Tutor IA'};
+  document.getElementById('page-title').textContent=titles[page]||page;
+
+  const pageEl=document.getElementById('page-'+page);
+  pageEl.classList.add('active');
+  if(page==='chat')initChat();
+
+  // FAB solo en tareas en móvil
+  const fab=document.getElementById('fab-add');
+  fab.style.display=(page==='tareas'&&window.innerWidth<=768)?'flex':'none';
+
+  if(page==='iglesia'){renderActividades();renderIglesiaTasks();}
+  if(page==='chat')pageEl.scrollTop=pageEl.scrollHeight;
+  closeMore();
+}
+
+// ── CHAT ──
+function initChat(){
+  const container=document.getElementById('quick-actions');
+  if(!container)return;
+  container.innerHTML=QUICK_PROMPTS.map((p,i)=>`
+    <button onclick="openPrompt(${i})" style="display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;cursor:pointer;text-align:left;transition:all .15s;width:100%;font-family:inherit;" onmouseover="this.style.borderColor='var(--accent-border)'" onmouseout="this.style.borderColor='var(--border)'">
+      <span style="font-size:20px;flex-shrink:0">${p.icon}</span>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500;color:var(--text-primary)">${p.label}</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:260px">${p.texto.substring(0,60)}...</div>
+      </div>
+      <i class="ti ti-external-link" style="font-size:14px;color:var(--text-muted);flex-shrink:0"></i>
+    </button>`).join('');
+}
+
+function openPrompt(i){
+  const texto=CONTEXTO+QUICK_PROMPTS[i].texto;
+  const url='https://claude.ai/new?q='+encodeURIComponent(texto);
+  window.open(url,'_blank');
+}
+
+function openCustomPrompt(){
+  const custom=document.getElementById('custom-prompt').value.trim();
+  if(!custom)return;
+  const texto=CONTEXTO+custom;
+  const url='https://claude.ai/new?q='+encodeURIComponent(texto);
+  window.open(url,'_blank');
+}
+
+function autoResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';}
+
+// ── RESIZE handler ──
+window.addEventListener('resize',()=>{
+  const fab=document.getElementById('fab-add');
+  fab.style.display=(currentPage==='tareas'&&window.innerWidth<=768)?'flex':'none';
+});
+
+init();
+</script>
+</body>
+</html>
